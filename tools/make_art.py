@@ -42,7 +42,7 @@ FX, FY = 120, 140
 ROWS_Y = (216, 240, 264)                                   # cup centers of the three tiers
 COLS_X = [36 + 24 * i for i in range(8)]
 AMEN_CX, AMEN_CY = 198, 84
-CARD_CX, CARD_CY, CARD_W, CARD_H = 120, 124, 212, 136
+CARD_CX, CARD_CY, CARD_W, CARD_H = 120, 125, 212, 144
 BUTTON_CX, BUTTON_CY, BUTTON_W = 184, 262, 90
 
 GOLD, CREAM, RED = "#e2b45a", "#fff3dc", "#b8322a"
@@ -132,8 +132,6 @@ def front():
 <!-- counter panel -->
 <rect x="{PILL_X + 2}" y="{PILL_Y + 3}" width="{PILL_W}" height="{PILL_H}" rx="{PILL_H / 2}" fill="#a8743a" opacity="0.3"/>
 <rect x="{PILL_X}" y="{PILL_Y}" width="{PILL_W}" height="{PILL_H}" rx="{PILL_H / 2}" fill="#fffaf0" stroke="{GOLD}" stroke-width="1.8"/>
-<text x="{PILL_X + 16}" y="{PILL_Y + PILL_H / 2 + 5}" font-family="{HEI}" font-weight="bold" font-size="14" fill="{RED}">祷告</text>
-<text x="{PILL_X + PILL_W - 18}" y="{PILL_Y + PILL_H / 2 + 5}" text-anchor="end" font-family="{HEI}" font-weight="bold" font-size="14" fill="{RED}">次</text>
 """
 
 
@@ -198,7 +196,7 @@ def card():
 <rect x="{x + 2}" y="{y + 4}" width="{CARD_W}" height="{CARD_H}" rx="10" fill="#6a4020" opacity="0.3"/>
 <rect x="{x}" y="{y}" width="{CARD_W}" height="{CARD_H}" rx="10" fill="url(#parch)" stroke="{GOLD}" stroke-width="2"/>
 <rect x="{x + 5}" y="{y + 5}" width="{CARD_W - 10}" height="{CARD_H - 10}" rx="7" fill="none" stroke="{GOLD}" stroke-width="0.8" opacity="0.7"/>
-<path d="M{CARD_CX} {y + 9} v10 M{CARD_CX - 4} {y + 13} h8" stroke="{GOLD}" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M{CARD_CX - 50} {y + 20} h26 M{CARD_CX + 24} {y + 20} h26" stroke="{GOLD}" stroke-width="0.8"/>
 """
 
 
@@ -212,13 +210,13 @@ def button():
 <text x="{BUTTON_CX}" y="{y - 7}" text-anchor="middle" font-family="{KAI}" font-weight="bold" font-size="13" fill="#fff8e6">与耶稣一同祷告</text>
 <rect x="{x - 3}" y="{y - 3}" width="{w + 6}" height="{h + 6}" rx="{h / 2 + 3}" fill="#fff4c8" opacity="0.45"/>
 <rect x="{x}" y="{y}" width="{w}" height="{h}" rx="{h / 2}" fill="url(#btn)" stroke="#a8742a" stroke-width="1.4"/>
-<text x="{BUTTON_CX}" y="{BUTTON_CY + 5}" text-anchor="middle" font-family="{HEI}" font-weight="bold" font-size="14" fill="{RED}">点击祷告</text>
+<text x="{BUTTON_CX}" y="{BUTTON_CY + 5}" text-anchor="middle" font-family="{HEI}" font-weight="bold" font-size="14" fill="{RED}">开始祷告</text>
 """
 
 
 def toast():
     return (f'<rect x="{120 - 86}" y="{128 - 20}" width="172" height="40" rx="12" fill="#5a3418" opacity="0.88"/>'
-            f'<text x="120" y="134" text-anchor="middle" font-family="{HEI}" font-weight="bold" font-size="16" fill="#fff8e6">祷告次数已清零</text>')
+            f'<text x="120" y="134" text-anchor="middle" font-family="{HEI}" font-weight="bold" font-size="16" fill="#fff8e6">点烛记录已清零</text>')
 
 
 def sprites():

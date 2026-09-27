@@ -1,11 +1,12 @@
 /*
  * Prayer time (祷告时光 · 与耶稣一同祷告) on the 1.50" 240x280 GC9306/GC9307 panel.
  *
- * Start screen: the picture of Jesus praying, with rising motes of light and a "点击祷告" button. In the prayer
- * scene every press is one prayer: a small light rises and lights one of the red votive candles on the rack,
- * "阿们" rises at the top right and the counter bumps. The first 24 prayers light the whole rack. Every 10th
- * prayer: soft rays of light and a Bible verse (Chinese Union Version) on a card for a few seconds.
- * The count is kept in NVS; holding the key 1 s clears it.
+ * Start screen: the picture of Jesus praying, with rising motes of light and a "开始祷告" button. Entering the
+ * prayer scene shows "今日经文": soft rays of light and a Bible verse (Chinese Union Version) on a card.
+ * The user prays in silence, then presses the key to light a candle - the press is not the prayer itself: a small
+ * light rises and lights one of the red votive candles on the rack, "阿们" fades in and out at the top right and the
+ * count of lit candles bumps. The first 24 light the whole rack. Before the first candle the panel shows the hint
+ * "默祷之后，按一下点亮蜡烛". The count is kept in NVS; holding the key 1 s clears it.
  *
  * Art: tools/make_art.py, verses and fonts: tools/make_text.py. Frames are composed strip by strip into two
  * DMA buffers.
@@ -46,15 +47,13 @@ static const char* TAG = "pray";
 #define KINDLE_MS     260    // new flame growing
 #define RING_MS       520
 #define BUMP_MS       160
-#define POP_MS        900
-#define POP_RISE      24
+#define POP_MS        1100   // "阿们" fades in and out where it is
 #define MAX_POPS      4
 #define TOAST_MS      1400
 #define TOAST_FADE    350
 #define SAVE_IDLE_MS  1000
 
-#define VERSE_EVERY   10
-#define VERSE_MS      6500   // rays + verse card
+#define VERSE_MS      8000   // rays + "今日经文" card when the prayer scene opens
 #define VERSE_IN_MS   450
 #define VERSE_OUT_MS  600
 #define MOTES         7
@@ -330,7 +329,7 @@ static void show_verse(int64_t now)
     s.verse   = v;
     s.verse_t = now;
     layout_verse(v);
-    ESP_LOGI(TAG, "%lu prayers: %s", (unsigned long)s.count, s_verses[v].ref);
+    ESP_LOGI(TAG, "verse of the day: %s", s_verses[v].ref);
 }
 
 static void arrive(const light_t* l, int64_t now)
@@ -348,9 +347,6 @@ static void arrive(const light_t* l, int64_t now)
         }
     }
     s.pop_t[oldest] = now;
-    if (s.count % VERSE_EVERY == 0) {
-        show_verse(now);
-    }
 }
 
 static void pray(int64_t now)
@@ -496,35 +492,51 @@ static void render_church(uint16_t* strip, int y0, int y1)
 
     draw_motes(strip, y0, y1);
 
-    char txt[12];
-    snprintf(txt, sizeof(txt), "%lu", (unsigned long)s.count);
-    const ui_font_t* font  = strlen(txt) > 5 ? &ui_font_lb : &ui_font_xl;
-    int              dy    = 0;
-    uint16_t         color = COLOR_COUNT;
-    if (now - s.bump_t < BUMP_MS) {
-        dy    = -(int)lroundf(6 * sinf((float)(now - s.bump_t) / BUMP_MS * (float)M_PI));
-        color = COLOR_COUNT_BUMP;
+    /* counter panel: "已点亮 N 支", or before the first candle the hint to pray first */
+    bool waiting = s.count == 0;
+    for (int i = 0; i < MAX_LIGHTS && waiting; i++) {
+        waiting = !s.lights[i].t0;
     }
-    ui_text(font, txt, W / 2 - ui_text_width(font, txt) / 2, PILL_Y + PILL_H / 2 - (font->cap + font->ascent) / 2 + dy,
-            color, strip, y0, y1);
+    const int label_top = PILL_Y + PILL_H / 2 - font_ref.line_h / 2;
+    if (waiting) {
+        text_draw(&font_ref, TXT_HINT, W / 2 - text_width(&font_ref, TXT_HINT) / 2, label_top, C_VERSE, 256, strip, y0,
+                  y1);
+    } else {
+        char txt[12];
+        snprintf(txt, sizeof(txt), "%lu", (unsigned long)s.count);
+        const ui_font_t* font  = strlen(txt) > 4 ? &ui_font_lb : &ui_font_xl;
+        int              dy    = 0;
+        uint16_t         color = COLOR_COUNT;
+        if (now - s.bump_t < BUMP_MS) {
+            dy    = -(int)lroundf(6 * sinf((float)(now - s.bump_t) / BUMP_MS * (float)M_PI));
+            color = COLOR_COUNT_BUMP;
+        }
+        ui_text(font, txt, W / 2 - ui_text_width(font, txt) / 2,
+                PILL_Y + PILL_H / 2 - (font->cap + font->ascent) / 2 + dy, color, strip, y0, y1);
+        text_draw(&font_ref, TXT_LIT_L, PILL_X + 16, label_top, C_REF, 256, strip, y0, y1);
+        text_draw(&font_ref, TXT_LIT_R, PILL_X + PILL_W - 18 - text_width(&font_ref, TXT_LIT_R), label_top, C_REF, 256,
+                  strip, y0, y1);
+    }
 
-    for (int i = 0; i < MAX_POPS; i++) {  // "阿们" rising gently
+    for (int i = 0; i < MAX_POPS; i++) {  // "阿们": a quiet fade in and out, no movement
         const int64_t t = now - s.pop_t[i];
         if (t < 0 || t >= POP_MS) {
             continue;
         }
-        const float p    = (float)t / POP_MS;
-        const float rise = 1 - (1 - p) * (1 - p);
-        const float a    = t < 150 ? t / 150.0f : (p > 0.6f ? (1 - p) / 0.4f : 1);
-        blit(SPR_AMEN, 0, -(int)lroundf(POP_RISE * rise), (int)(256 * clampf(a, 0, 1)), strip, y0, y1);
+        const float a = t < 250 ? t / 250.0f : (t > POP_MS - 500 ? (POP_MS - t) / 500.0f : 1);
+        blit(SPR_AMEN, 0, 0, (int)(230 * clampf(a, 0, 1)), strip, y0, y1);
     }
 
-    if (fade) {  // the verse card
-        const int rise = (256 - fade) * 8 / 256;
+    if (fade) {  // "今日经文" card
+        const int rise    = (256 - fade) * 8 / 256;
+        const int card_y  = CARD_CY - CARD_H / 2 + rise;
         blit(SPR_CARD, 0, rise, fade, strip, y0, y1);
-        const int line_step = 23;
-        const int block     = s.vlines * line_step + 22;  // verse lines + reference
-        int       top       = CARD_CY - block / 2 + 6 + rise;
+        text_draw(&font_ref, TXT_TODAY, CARD_CX - text_width(&font_ref, TXT_TODAY) / 2, card_y + 11, C_REF, fade, strip,
+                  y0, y1);
+        const int line_step = 22;
+        const int block     = s.vlines * line_step + 20;  // verse lines + reference
+        const int area_top  = card_y + 30, area_bot = card_y + CARD_H - 4;
+        int       top       = area_top + (area_bot - area_top - block) / 2;
         for (int i = 0; i < s.vlines; i++, top += line_step) {
             text_draw(&font_verse, s.vline[i], CARD_CX - text_width(&font_verse, s.vline[i]) / 2, top, C_VERSE, fade,
                       strip, y0, y1);
@@ -625,7 +637,8 @@ void app_main(void)
                     count_reset(now);
                 }
             } else if (ev == BUTTON_UP && !long_fired && s.logo) {
-                s.logo = false;  // enter the prayer scene; this click is not counted
+                s.logo = false;  // enter the prayer scene (not counted) with the verse of the day
+                show_verse(now);
             }
         }
         update(now);
