@@ -42,7 +42,7 @@ FX, FY = 120, 140
 ROWS_Y = (216, 240, 264)                                   # cup centers of the three tiers
 COLS_X = [36 + 24 * i for i in range(8)]
 AMEN_CX, AMEN_CY = 198, 84
-CARD_CX, CARD_CY, CARD_W, CARD_H = 120, 125, 212, 144
+CARD_CX, CARD_CY, CARD_W, CARD_H = 120, 212, 212, 132   # over the candle rack: never over the face
 BUTTON_CX, BUTTON_CY, BUTTON_W = 184, 262, 90
 
 GOLD, CREAM, RED = "#e2b45a", "#fff3dc", "#b8322a"
@@ -196,7 +196,7 @@ def card():
 <rect x="{x + 2}" y="{y + 4}" width="{CARD_W}" height="{CARD_H}" rx="10" fill="#6a4020" opacity="0.3"/>
 <rect x="{x}" y="{y}" width="{CARD_W}" height="{CARD_H}" rx="10" fill="url(#parch)" stroke="{GOLD}" stroke-width="2"/>
 <rect x="{x + 5}" y="{y + 5}" width="{CARD_W - 10}" height="{CARD_H - 10}" rx="7" fill="none" stroke="{GOLD}" stroke-width="0.8" opacity="0.7"/>
-<path d="M{CARD_CX - 50} {y + 20} h26 M{CARD_CX + 24} {y + 20} h26" stroke="{GOLD}" stroke-width="0.8"/>
+<path d="M{CARD_CX - 50} {y + 17} h26 M{CARD_CX + 24} {y + 17} h26" stroke="{GOLD}" stroke-width="0.8"/>
 """
 
 

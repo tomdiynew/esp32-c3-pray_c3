@@ -2,7 +2,8 @@
  * Prayer time (祷告时光 · 与耶稣一同祷告) on the 1.50" 240x280 GC9306/GC9307 panel.
  *
  * Start screen: the picture of Jesus praying, with rising motes of light and a "开始祷告" button. Entering the
- * prayer scene shows "今日经文": soft rays of light and a Bible verse (Chinese Union Version) on a card.
+ * prayer scene shows "今日经文": soft rays of light and a Bible verse (Chinese Union Version) on a card over the
+ * candle rack, below the face in the portrait.
  * The user prays in silence, then presses the key to light a candle - the press is not the prayer itself: a small
  * light rises and lights one of the red votive candles on the rack, "阿们" fades in and out at the top right and the
  * count of lit candles bumps. The first 24 light the whole rack. Before the first candle the panel shows the hint
@@ -531,11 +532,11 @@ static void render_church(uint16_t* strip, int y0, int y1)
         const int rise    = (256 - fade) * 8 / 256;
         const int card_y  = CARD_CY - CARD_H / 2 + rise;
         blit(SPR_CARD, 0, rise, fade, strip, y0, y1);
-        text_draw(&font_ref, TXT_TODAY, CARD_CX - text_width(&font_ref, TXT_TODAY) / 2, card_y + 11, C_REF, fade, strip,
+        text_draw(&font_ref, TXT_TODAY, CARD_CX - text_width(&font_ref, TXT_TODAY) / 2, card_y + 8, C_REF, fade, strip,
                   y0, y1);
-        const int line_step = 22;
-        const int block     = s.vlines * line_step + 20;  // verse lines + reference
-        const int area_top  = card_y + 30, area_bot = card_y + CARD_H - 4;
+        const int line_step = 20;
+        const int block     = s.vlines * line_step + 18;  // verse lines + reference
+        const int area_top  = card_y + 26, area_bot = card_y + CARD_H - 4;
         int       top       = area_top + (area_bot - area_top - block) / 2;
         for (int i = 0; i < s.vlines; i++, top += line_step) {
             text_draw(&font_verse, s.vline[i], CARD_CX - text_width(&font_verse, s.vline[i]) / 2, top, C_VERSE, fade,
@@ -543,7 +544,7 @@ static void render_church(uint16_t* strip, int y0, int y1)
         }
         char ref[48];
         snprintf(ref, sizeof(ref), "—— %s", s_verses[s.verse].ref);
-        text_draw(&font_ref, ref, CARD_CX + CARD_W / 2 - 18 - text_width(&font_ref, ref), top + 2, C_REF, fade, strip,
+        text_draw(&font_ref, ref, CARD_CX + CARD_W / 2 - 18 - text_width(&font_ref, ref), top + 1, C_REF, fade, strip,
                   y0, y1);
     }
 
