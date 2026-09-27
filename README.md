@@ -1,4 +1,4 @@
-# 祷告时光 pray_c3 · 与耶稣一同祷告
+# 祷告时光 esp32-c3-pray_c3 · 与耶稣一同祷告
 
 ESP32-C3 SuperMini + 1.50 寸 240×280 SPI 彩屏（GC9306 / GC9307）做的祷告小程序，基于 **ESP-IDF v6.1**。
 每按一次板载 BOOT 键，就是一次祷告，点亮一支祈祷蜡烛；祷告次数保存在 Flash 里。
@@ -55,7 +55,8 @@ FPC-1502401（GC9306）或 FPC-1502403（GC9307），开机自动识别。引脚
 
 ```powershell
 . C:\Espressif\tools\Microsoft.v6.1.PowerShell_profile.ps1
-cd <本工程目录>
+git clone https://github.com/tomdiynew/esp32-c3-pray_c3.git
+cd esp32-c3-pray_c3
 idf.py set-target esp32c3        # 首次
 idf.py build
 idf.py -p COMx flash monitor
